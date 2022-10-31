@@ -19,51 +19,84 @@ class Tetris:
         self.matrix_height = 20
         self.matrix = [[0]*self.matrix_width for _ in range(self.matrix_height)]
         self.position = [4,0]
+        self.shape = [[1,0], [1,1], [1,0]]
 
-    def move_down_tetrimino(self):
-        try:
-            if self.matrix[self.position[1]+1][self.position[0]] == 0:
-                self.position[1]+=1
-            else:
-                self.matrix[self.position[1]][self.position[0]] = 1
-                self.position = [4,0]
-        except:
-            self.matrix[self.position[1]][self.position[0]] = 1
-            self.position = [4,0]
+    def save_shape_in_matrix(self):
+        for row in range(len(self.shape)):
+            for column in range(len(self.shape[row])):
+                if self.shape[row][column]!=0:
+                    self.matrix[self.position[1]+row][self.position[0]+column] = 1
+        self.position = [4,0]
+
+    def check(self,value_row, value_column):
+        all_ok = True
+        for row in range(len(self.shape)):
+            for column in range(len(self.shape[row])):
+                if self.shape[row][column]!=0:
+                    if self.matrix[self.position[1]+row+value_row][self.position[0]+column+value_column] != 0:
+                        all_ok = False
+        return all_ok
+
+    def move_tetrimino(self, direction):
+        if direction == 'down':
+            try:
+                all_ok = self.check(1,0)
+                if all_ok == True:
+                    self.position[1]+=1
+                else:
+                    self.save_shape_in_matrix()
+            except:
+                self.save_shape_in_matrix()
+
+        elif direction == 'left':
+            if self.position[0]>0:
+                try:
+                    all_ok = all_ok = self.check(0,-1)
+                    if all_ok == True:
+                        self.position[0]-=1
+                except:
+                    pass
+        
+        elif direction == 'right':
+            if self.position[0]<self.matrix_width-1:
+                try:
+                    all_ok = self.check(0,1)
+                    if all_ok == True:
+                        self.position[0]+=1
+                except:
+                    pass
     
     def event_per_sec(self):
         self.time+=1
-        self.move_down_tetrimino()
+        self.move_tetrimino('down')
+
+    def draw_square(self, color, column, row):
+        pygame.draw.rect(self.window,(color),[
+        column*(self.square_height+self.margin),
+        row*(self.square_height+self.margin),
+        self.square_width,
+        self.square_height
+        ])
 
     def draw_background(self):
         self.window.fill(self.black)
         for row in range(self.matrix_height):
             for column in range(self.matrix_width):
                 if self.matrix[row][column]==0:
-                    pygame.draw.rect(self.window,(self.gray),[
-                    column*(self.square_height+self.margin),
-                    row*(self.square_height+self.margin),
-                    self.square_width,
-                    self.square_height
-                    ])
+                    self.draw_square(self.gray,column,row)
+
                 elif self.matrix[row][column]==1:
-                    pygame.draw.rect(self.window,(self.red),[
-                    column*(self.square_height+self.margin),
-                    row*(self.square_height+self.margin),
-                    self.square_width,
-                    self.square_height
-                    ])
+                    self.draw_square(self.red,column,row)
 
         time = self.font.render('Time: {}'.format(self.time), False, self.white)
         self.window.blit(time, (0,640))
 
     def draw_tetrimino(self):
-        pygame.draw.rect(self.window,(self.red),[
-        self.position[0]*(self.square_height+self.margin),
-        self.position[1]*(self.square_height+self.margin),
-        self.square_width,
-        self.square_height
-        ])
+        for row in range(len(self.shape)):
+            for column in range(len(self.shape[row])):
+                if self.shape[row][column]!=0:
+                    self.draw_square(self.red,self.position[0]+column,self.position[1]+row)
+
         pygame.display.update()
 
     def draw(self):
@@ -84,13 +117,11 @@ class Tetris:
                     self.event_per_sec()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        if self.position[0]>0:
-                            self.position[0] -= 1
+                        self.move_tetrimino('left')
                     if event.key == pygame.K_RIGHT:
-                        if self.position[0]<self.matrix_width-1:
-                            self.position[0] += 1
+                        self.move_tetrimino('right')
                     if event.key == pygame.K_DOWN:
-                        self.move_down_tetrimino()
+                        self.move_tetrimino('down')
 
             self.draw()
             
