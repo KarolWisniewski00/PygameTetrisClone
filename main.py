@@ -141,6 +141,15 @@ class Tetris:
         time = self.font.render('Time: {}'.format(self.time), False, self.white)
         self.window.blit(time, (0,640))
 
+    def chcek_rows(self):
+        counter=0
+        for row in self.matrix:
+            if row[0] != 0 and row[1] != 0 and row[2] != 0 and row[3] != 0 and row[4] != 0 and row[5] != 0 and row[6] != 0 and row[7] != 0 and row[8] != 0 and row[9] != 0:
+                self.matrix.pop(counter)
+                self.matrix.insert(0, [0]*self.matrix_width)
+                break
+            counter+=1
+
     def draw_tetrimino(self):
         for row in range(len(self.shape)):
             for column in range(len(self.shape[row])):
@@ -173,6 +182,7 @@ class Tetris:
                     if event.key == pygame.K_DOWN:
                         self.move_tetrimino('down')
 
+            self.chcek_rows()
             self.draw()
             
         pygame.quit()
