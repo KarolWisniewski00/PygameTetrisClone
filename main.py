@@ -5,7 +5,6 @@ class Tetris:
     def __init__(self):
         pygame.display.set_caption('Tetris')
         pygame.font.init()
-        WIDTH, HEIGHT = 400,800
         self.fps=60
         self.black=(0,0,0)
         self.white=(255,255,255)
@@ -20,14 +19,20 @@ class Tetris:
         self.square_width, self.square_height = 30,30 
         self.margin=1
         self.time=0
-        self.window = pygame.display.set_mode((WIDTH,HEIGHT))
-        self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.matrix_width = 10
         self.matrix_height = 20
         self.matrix = [[0]*self.matrix_width for _ in range(self.matrix_height)]
         self.position = [4,0]
         self.tetriminos = ['I','T','O','L','J','S','Z']
         self.save_shape(random.choice(self.tetriminos))
+        self.next=random.choice(self.tetriminos)
+        self.points=0
+        self.level=1
+        self.lines=0
+        self.combo=1
+        WIDTH, HEIGHT = (self.matrix_width*(self.square_width+self.margin))*2,self.matrix_height*(self.square_height+self.margin)
+        self.window = pygame.display.set_mode((WIDTH,HEIGHT))
+        self.font = pygame.font.SysFont('Comic Sans MS', 30)
 
     def save_shape(self, now):
         if now == 'I':
@@ -64,7 +69,9 @@ class Tetris:
             for column in range(len(self.shape[row])):
                 if self.shape[row][column]!=0:
                     self.matrix[self.position[1]+row][self.position[0]+column] = self.color_number
-        self.save_shape(random.choice(self.tetriminos))
+        self.save_shape(self.next)
+        self.next=random.choice(self.tetriminos)
+        self.combo=1
         self.position = [4,0]
 
     def check(self,value_row, value_column):
@@ -117,29 +124,60 @@ class Tetris:
         self.square_height
         ])
 
+    def draw_colors(self,value,row,column,row_position, column_position):
+        if value[row][column]==0:
+            self.draw_square(self.gray,column_position,row_position)
+        elif value[row][column]==1:
+            self.draw_square(self.red,column_position,row_position)
+        elif value[row][column]==2:
+            self.draw_square(self.gray_2,column_position,row_position)
+        elif value[row][column]==3:
+            self.draw_square(self.blue,column_position,row_position)
+        elif value[row][column]==4:
+            self.draw_square(self.yellow,column_position,row_position)
+        elif value[row][column]==5:
+            self.draw_square(self.pink,column_position,row_position)
+        elif value[row][column]==6:
+            self.draw_square(self.blue_2,column_position,row_position)
+        elif value[row][column]==7:
+            self.draw_square(self.green,column_position,row_position)
+
     def draw_background(self):
         self.window.fill(self.black)
         for row in range(self.matrix_height):
             for column in range(self.matrix_width):
-                if self.matrix[row][column]==0:
-                    self.draw_square(self.gray,column,row)
-                elif self.matrix[row][column]==1:
-                    self.draw_square(self.red,column,row)
-                elif self.matrix[row][column]==2:
-                    self.draw_square(self.gray_2,column,row)
-                elif self.matrix[row][column]==3:
-                    self.draw_square(self.blue,column,row)
-                elif self.matrix[row][column]==4:
-                    self.draw_square(self.yellow,column,row)
-                elif self.matrix[row][column]==5:
-                    self.draw_square(self.pink,column,row)
-                elif self.matrix[row][column]==6:
-                    self.draw_square(self.blue_2,column,row)
-                elif self.matrix[row][column]==7:
-                    self.draw_square(self.green,column,row)
+                self.draw_colors(self.matrix,row,column,row,column)
+        
+        if self.next == 'I':
+            shape = [[1],[1],[1],[1]]
+        elif self.next == 'T':
+            shape = [[2,2,2],[0,2,0]]
+        elif self.next == 'O':
+            shape = [[3,3],[3,3]]
+        elif self.next == 'L':
+            shape = [[4,0],[4,0],[4,4]]
+        elif self.next == 'J':
+            shape = [[0,5],[0,5],[5,5]]
+        elif self.next == 'S':
+            shape = [[0,6,6],[6,6,0]]
+        elif self.next == 'Z':
+            shape = [[7,7,0],[0,7,7]]
+        
+        for row in range(len(shape)):
+            for column in range(len(shape[row])):
+                self.draw_colors(shape,row,column,row+16,column+15)
 
+        height = (self.matrix_height*(self.square_height+self.margin))//5
         time = self.font.render('Time: {}'.format(self.time), False, self.white)
-        self.window.blit(time, (0,640))
+        points = self.font.render('Points: {}'.format(self.points), False, self.white)
+        level = self.font.render('Level: {}'.format(self.level), False, self.white)
+        lines = self.font.render('Lines: {}'.format(self.lines), False, self.white)
+        next = self.font.render('Next:', False, self.white)
+        self.window.blit(time, (self.matrix_width*(self.square_width+self.margin),0))
+        self.window.blit(points, (self.matrix_width*(self.square_width+self.margin),height))
+        self.window.blit(level, (self.matrix_width*(self.square_width+self.margin),height*2))
+        self.window.blit(lines, (self.matrix_width*(self.square_width+self.margin),height*3))
+        self.window.blit(next, (self.matrix_width*(self.square_width+self.margin),height*4))
 
     def chcek_rows(self):
         counter=0
@@ -147,6 +185,11 @@ class Tetris:
             if row[0] != 0 and row[1] != 0 and row[2] != 0 and row[3] != 0 and row[4] != 0 and row[5] != 0 and row[6] != 0 and row[7] != 0 and row[8] != 0 and row[9] != 0:
                 self.matrix.pop(counter)
                 self.matrix.insert(0, [0]*self.matrix_width)
+                self.lines+=1
+                self.points+=(100*self.combo)
+                self.combo+=1
+                if self.lines==50:
+                    self.points+=2500
                 break
             counter+=1
 
@@ -181,6 +224,9 @@ class Tetris:
                         self.move_tetrimino('right')
                     if event.key == pygame.K_DOWN:
                         self.move_tetrimino('down')
+                        self.points+=1
+                    if event.key == pygame.K_UP:
+                        pass
 
             self.chcek_rows()
             self.draw()
