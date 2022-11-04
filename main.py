@@ -63,6 +63,49 @@ class Tetris:
             self.shape = [[7,7,0],[0,7,7]]
             self.color = self.green
             self.color_number = 7
+    
+    def rotate_shape(self):
+        if self.shape == [[1],[1],[1],[1]]:
+            self.shape = [[1,1,1,1]]
+        elif self.shape == [[1,1,1,1]]:
+            self.shape = [[1],[1],[1],[1]]
+
+        elif self.shape == [[2,2,2],[0,2,0]]:
+            self.shape = [[2,0],[2,2],[2,0]]
+        elif self.shape == [[2,0],[2,2],[2,0]]:
+            self.shape = [[0,2,0],[2,2,2]]
+        elif self.shape == [[0,2,0],[2,2,2]]:
+            self.shape = [[0,2],[2,2],[0,2]]
+        elif self.shape == [[0,2],[2,2],[0,2]]:
+            self.shape = [[2,2,2],[0,2,0]]
+        
+        elif self.shape == [[4,0],[4,0],[4,4]]:
+            self.shape = [[0,0,4],[4,4,4]]
+        elif self.shape == [[0,0,4],[4,4,4]]:
+            self.shape = [[4,4],[0,4],[0,4]]
+        elif self.shape == [[4,4],[0,4],[0,4]]:
+            self.shape = [[4,4,4],[4,0,0]]
+        elif self.shape == [[4,4,4],[4,0,0]]:
+            self.shape = [[4,0],[4,0],[4,4]]
+        
+        elif self.shape == [[0,5],[0,5],[5,5]]:
+            self.shape = [[5,5,5],[0,0,5]]
+        elif self.shape == [[5,5,5],[0,0,5]]:
+            self.shape = [[5,5],[5,0],[5,0]]
+        elif self.shape == [[5,5],[5,0],[5,0]]:
+            self.shape = [[5,0,0],[5,5,5]]
+        elif self.shape == [[5,0,0],[5,5,5]]:
+            self.shape = [[0,5],[0,5],[5,5]]
+
+        elif self.shape == [[0,6,6],[6,6,0]]:
+            self.shape = [[6,0],[6,6],[0,6]]
+        elif self.shape == [[6,0],[6,6],[0,6]]:
+            self.shape = [[0,6,6],[6,6,0]]
+
+        elif self.shape == [[7,7,0],[0,7,7]]:
+            self.shape = [[0,7],[7,7],[7,0]]
+        elif self.shape == [[0,7],[7,7],[7,0]]:
+            self.shape = [[7,7,0],[0,7,7]]
 
     def save_shape_in_matrix(self):
         for row in range(len(self.shape)):
@@ -226,7 +269,7 @@ class Tetris:
                         self.move_tetrimino('down')
                         self.points+=1
                     if event.key == pygame.K_UP:
-                        pass
+                        self.rotate_shape()
 
             self.chcek_rows()
             self.draw()
